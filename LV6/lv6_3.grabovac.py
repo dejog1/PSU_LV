@@ -2,7 +2,7 @@ from sklearn import datasets
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
-
+from scipy.cluster.hierarchy import dendrogram, linkage
 
 def generate_data(n_samples, flagc):
     if flagc == 1:
