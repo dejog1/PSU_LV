@@ -34,17 +34,17 @@ def generate_data(n_samples, flagc):
     return X
 
 
-# Generiramo 500 podataka koristeći metodu 1
+
 n_samples = 500
 method = 1
 X = generate_data(n_samples, method)
 
-# KMeans algoritam
+
 kmeans = KMeans(n_clusters=3, random_state=0).fit(X)
 labels = kmeans.labels_
 centers = kmeans.cluster_centers_
 
-# Prikaz podataka
+
 plt.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis')
 plt.scatter(centers[:, 0], centers[:, 1], c='red', marker='x')
 plt.title('KMeans Clustering')
