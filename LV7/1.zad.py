@@ -1,77 +1,54 @@
-import numpy as np
+
+import numpy as np  
 from tensorflow import keras
-from tensorflow.keras import layers
-from matplotlib import pyplot as plt
-from sklearn.metrics import confusion_matrix
+from tensorflow.keras import layers  
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
+from matplotlib import pyplot as plt 
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay  
 
 
-
-# Model / data parameters
-num_classes = 10
-input_shape = (28, 28, 1)
-
-# train i test podaci
 (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
 
-# prikaz karakteristika train i test podataka
-print('Train: X=%s, y=%s' % (x_train.shape, y_train.shape))
-print('Test: X=%s, y=%s' % (x_test.shape, y_test.shape))
+for i in range(1,10):
+    plt.imshow(x_train[i], cmap='gray')
+    plt.title(f"Broj: {y_train[i]}")
+    plt.show()
 
-# TODO: prikazi nekoliko slika iz train skupa
-
-plt.figure(1)
-plt.imshow(x_train[0,:,:],cmap='gray')
-plt.show()
-
-# skaliranje slike na raspon [0,1]
 x_train_s = x_train.astype("float32") / 255
 x_test_s = x_test.astype("float32") / 255
 
-# slike trebaju biti (28, 28, 1)
-x_train_s = np.expand_dims(x_train_s, -1)
-x_test_s = np.expand_dims(x_test_s, -1)
+x_train_s = x_train_s.reshape(60000, 784)
+x_test_s = x_test_s.reshape(10000, 784)
 
-print("x_train shape:", x_train_s.shape)
-print(x_train_s.shape[0], "train samples")
-print(x_test_s.shape[0], "test samples")
+y_train_s = keras.utils.to_categorical(y_train, 10)
+y_test_s = keras.utils.to_categorical(y_test, 10)
 
-
-# pretvori labele
-y_train_s = keras.utils.to_categorical(y_train, num_classes)
-y_test_s = keras.utils.to_categorical(y_test, num_classes)
-
-
-# TODO: kreiraj model pomocu keras.Sequential(); prikazi njegovu strukturu
-
-model = keras.Sequential([
-    keras.Input(shape=input_shape),
-    layers.Conv2D(32, kernel_size=(3,3),activation='relu'),
-    layers.MaxPooling2D(pool_size=(2,2)),
-    layers.Conv2D(16,kernel_size=(3,3),activation='relu'),
-    layers.MaxPooling2D(pool_size=(2,2)),
-    layers.Flatten(),
-    layers.Dense(10, activation='softmax')
-])
-
+model = Sequential()
+model.add(keras.Input(shape=(784,)))
+model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(10, activation='softmax'))
 model.summary()
 
-# TODO: definiraj karakteristike procesa ucenja pomocu .compile()
+model.compile(optimizer='sgd', loss='categorical_crossentropy', metrics=['accuracy'])
 
-model.compile(loss='categorical_crossentropy',optimizer='Nadam',metrics=['accuracy'])
+fit = model.fit(x_train_s, y_train_s, epochs=5, batch_size=32)
 
+train_loss, train_accuracy = model.evaluate(x_train_s, y_train_s)
+test_loss, test_accuracy = model.evaluate(x_test_s, y_test_s)
+print(f"Trening Tocnost: {train_accuracy:.2f}")
+print(f"Test Tocnost: {test_accuracy:.2f}")
 
-# TODO: provedi ucenje mreze
+y_test_pred = model.predict(x_test_s)
+y_test_pred_classes = np.argmax(y_test_pred, axis=1)
+conf_matrix = confusion_matrix(y_test, y_test_pred_classes)
+disp = ConfusionMatrixDisplay(confusion_matrix=conf_matrix, display_labels=range(10))
+disp.plot()
+plt.show()
 
-model.fit(x_train_s, y_train_s, epochs=7, batch_size=32)
-
-# TODO: Prikazi test accuracy i matricu zabune
-loss_and_metrics=model.evaluate(x_test_s, y_test_s, batch_size=128)
-print(loss_and_metrics)
-
-
-# TODO: spremi model
-
-
-model.save('model')
+netocno = np.where(y_test != y_test_pred_classes)[0]
+for i in range(5):
+    index = netocno[i]
+    plt.imshow(x_test[index], cmap='gray')
+    plt.title(f"Istinito: {y_test[index]}, Predvideno: {y_test_pred_classes[index]}")
+    plt.show()
