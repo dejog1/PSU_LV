@@ -8,27 +8,29 @@ import numpy as np
 filename = 'test.png'
 
 # Ucitaj sliku
-img_original = mpimg.imread('test.png')  # Zamijeni 'test.png' s putanjom do svoje slike
-img = color.rgb2gray(img_original)
-img = resize(img, (28, 28))
+img_original = mpimg.imread(filename)  
+if img_original.ndim == 3:
+    img = color.rgb2gray(img_original)
+else:
+    img = img_original  # već siva slika
 
-# Prikazi sliku
-plt.imshow(img, cmap=plt.get_cmap('gray'))
-plt.axis('off')  
+# Promijeni veličinu na 28x28 i prikaži sliku
+img = resize(img, (28, 28), anti_aliasing=True)
+plt.imshow(img, cmap='gray')
+plt.axis('off')
+plt.title('Ulazna slika')
 plt.show()
 
-# Pripremi sliku - ulaz u mrezu
-img = img.reshape(1, 28, 28, 1)
-img = img.astype('float32')
+# Pripremi sliku - ulaz u mrežu
+img = img.reshape(1, 28, 28, 1).astype('float32')
 
-# TODO: ucitaj izgradenu mrezu
+# TODO: učitaj izgrađenu mrežu
+model = models.load_model('best_model.h5')
 
+# TODO: napravi predikciju
+predictions = model.predict(img)
+predicted_class = np.argmax(predictions)
 
-
-# TODO: napravi predikciju za ucitanu sliku pomocu mreze
-
-
-
-# TODO: ispis rezultat u terminal
-
-
+# TODO: ispiši rezultat u terminal
+print(f"Predviđena znamenka: {predicted_class}")
+print(f"Distribucija vjerojatnosti po klasama: {predictions}")
